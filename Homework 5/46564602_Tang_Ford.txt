@@ -1,0 +1,167 @@
+Execute:
+> select phone_number, address
+from users u, customers c
+where u.name like '%Rayo' and u.id = c.cid
+/* Q1 */
+
++ ----------------- + ------------ +
+| phone_number      | address      |
++ ----------------- + ------------ +
+| 7655488979        | 90924367 Von Karman Avenue, Ste. 200, Irvine, CA, 92606-496099 |
++ ----------------- + ------------ +
+1 rows
+
+Execute:
+> select distinct rid
+from customers_review
+where rating=5
+/* Q2 */
+
++ -------- +
+| rid      |
++ -------- +
+| 2        |
+| 4        |
+| 5        |
+| 7        |
++ -------- +
+4 rows
+
+Execute:
+> select distinct id, name, nickname
+from users, customers, customers_review
+where customers_review.cid = users.id and users.id = customers.cid
+/* Q3 */
+
++ ------- + --------- + ------------- +
+| id      | name      | nickname      |
++ ------- + --------- + ------------- +
+| 1       | Patrick M. Tyler | Forsaken Captain |
+| 28      | Anne M. Gurley | Brutus Pale Klek |
+| 3       | Kenneth B. Knight | Alien Leader  |
+| 12      | Joyce J. Rayo | Heavy Major   |
+| 14      | Sophia D. Williams | Nana Deadwood |
+| 16      | Michael R. Deane | Dana Hawkins  |
+| 18      | Raul A. Dicarlo | Gold Kala Fargloom |
+| 2       | Danny C. Malveaux | Gargoyle Bad  |
+| 26      | James K. McGaha | Joe Harker    |
+| 20      | Timothy A. German | Bloody Lena Stoker |
++ ------- + --------- + ------------- +
+10 rows
+
+Execute:
+> select distinct name, address
+from restaurants, restaurants_cuisine
+where (restaurants_cuisine.cuisine_type = 'Italian' or restaurants_cuisine.cuisine_type = 'Mexican') and restaurants_cuisine.rid = restaurants.rid
+/* Q4 */
+
++ --------- + ------------ +
+| name      | address      |
++ --------- + ------------ +
+| Pat Urban Seoul | 82750 Alton Pkwy, Irvine, CA, 926069 |
+| Dan Urban Plates | 993972 Barranca Pkwy, Irvine, CA, 926059 |
+| Ken Fish Grill | 953988 Barranca Pkwy, Irvine, CA, 926078 |
+| Sar Tang 190 | 194218 Jeffrey Rd, Irvine, CA, 926549 |
+| Nor Kingchops | 914463 Culver Dr, Irvine, CA, 924553 |
++ --------- + ------------ +
+5 rows
+
+Execute:
+> select name, address
+from restaurants
+where rid in (
+    select rid
+    from restaurants_cuisine
+    where cuisine_type = 'Italian' and rid in (
+        select rid
+        from restaurants_cuisine
+        where cuisine_type = 'Mexican'))
+/* Q5 */
+
++ --------- + ------------ +
+| name      | address      |
++ --------- + ------------ +
+| Ken Fish Grill | 953988 Barranca Pkwy, Irvine, CA, 926078 |
++ --------- + ------------ +
+1 rows
+
+Execute:
+> select distinct cid
+from customers_review
+where customers_review.cid not in (
+    select cid
+    from orders)
+/* Q6 */
+
++ -------- +
+| cid      |
++ -------- +
+| 20       |
+| 26       |
++ -------- +
+2 rows
+
+Execute:
+> select distinct rid
+from customers_review
+where customers_review.rating > (
+    select avg(rating)
+    from customers_review, restaurants
+    where restaurants.name = 'Nor Kingchops' and restaurants.rid = customers_review.rid)
+/* Q7 */
+
++ -------- +
+| rid      |
++ -------- +
+| 2        |
+| 4        |
+| 5        |
+| 7        |
++ -------- +
+4 rows
+
+Execute:
+> select min(total_amount)
+from orders
+/* Q8 */
+
++ ---------------------- +
+| min(total_amount)      |
++ ---------------------- +
+| 22.50                  |
++ ---------------------- +
+1 rows
+
+Execute:
+> select cid, max(total_amount)
+from orders
+where total_amount > 100
+group by cid
+having count(*) > 1
+/* Q9 */
+
++ -------- + ---------------------- +
+| cid      | max(total_amount)      |
++ -------- + ---------------------- +
+| 1        | 2913.00                |
+| 2        | 153.97                 |
++ -------- + ---------------------- +
+2 rows
+
+Execute:
+> select timediff(ots2.order_status_datetime, ots.order_status_datetime)
+from orders_track_status ots, orders_track_status ots2
+where ots.oid = ots2.oid and ots.order_status_code = 1 and ots2.order_status_code = 4
+order by timediff(ots2.order_status_datetime, ots.order_status_datetime) desc limit 5
+/* Q10 */
+
++ -------------------------------------------------------------------- +
+| timediff(ots2.order_status_datetime, ots.order_status_datetime)      |
++ -------------------------------------------------------------------- +
+| 03:02:00                                                             |
+| 03:00:00                                                             |
+| 03:00:00                                                             |
+| 02:00:00                                                             |
+| 02:00:00                                                             |
++ -------------------------------------------------------------------- +
+5 rows

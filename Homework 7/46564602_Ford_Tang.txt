@@ -1,0 +1,295 @@
+--------------
+-- This file demonstrates an example that how your script file should look like.
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- Refer to the "Final Note" section of HW 7 to properly use this template.
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- When you create your script, remove this header (3 lines). Your script should start with "use deliber;".
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 1-a
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE TABLE Bank_Account_History (
+	did integer,
+    bank_account_number VARCHAR(20),
+    bank_account_routing_number VARCHAR(20),
+    operation_datetime DATETIME,
+    primary key(did, bank_account_number, bank_account_routing_number),
+    foreign key(did)
+    references drivers(did))
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 1-b
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+INSERT INTO Bank_Account_History (did, bank_account_number, bank_account_routing_number, operation_datetime)
+select did, bank_account_number, bank_account_routing_number, now()
+from drivers
+--------------
+
+Query OK, 30 rows affected
+Records: 30  Duplicates: 0  Warnings: 0
+
+--------------
+-- 1-c
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE TRIGGER DRIVER_INSERT_TRIGGER
+after insert on drivers
+for each row
+	begin
+		insert into bank_account_history(did, bank_account_number, bank_account_routing_number, operation_datetime)
+        values (did, bank_account_number, bank_account_routing_number, now());
+	end
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 1-d
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE TRIGGER DRIVER_UPDATE_TRIGGER
+after update on drivers
+for each row
+	begin
+		insert into bank_account_history(did, bank_account_number, bank_account_routing_number, operation_datetime)
+        values (did, bank_account_number, bank_account_routing_number, now());
+	end
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 2-a
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE TABLE Credit_cards_new (
+card_number VARCHAR(20),
+expr_date CHAR(6),
+cid INTEGER,
+PRIMARY	KEY	(card_number),
+foreign key (cid)
+references customers(cid) on delete cascade)
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 2-b
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+ALTER TABLE credit_cards
+add foreign key (cid)
+references customers(cid) on delete cascade
+--------------
+
+Query OK, 50 rows affected
+Records: 50  Duplicates: 0  Warnings: 0
+
+--------------
+-- 3-a
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE VIEW Orders_Status_view (oid, order_customer, order_restaurant, order_initialized_datetime, order_being_prepared_datetime, order_being_delivered_datetime, order_delivered_datetime)
+as select orders.oid, users.name as order_customer, restaurants.name as order_restaurant, ots1.order_status_datetime as order_initialized_datetime, ots2.order_status_datetime as order_being_prepared_datetime, ots3.order_status_datetime as order_being_delivered_datetime, ots4.order_status_datetime as order_delivered_datetime
+from orders left join users on orders.cid = users.id 
+left join restaurants on orders.rid = restaurants.rid 
+left join orders_track_status ots1 on orders.oid = ots1.oid
+left join orders_track_status ots2 on orders.oid = ots2.oid
+left join orders_track_status ots3 on orders.oid = ots3.oid
+left join orders_track_status ots4 on orders.oid = ots4.oid
+where ots1.order_status_code = 1 and
+ots2.order_status_code = 2 and
+ots3.order_status_code = 3 and
+ots4.order_status_code = 4
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 3-b
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+SELECT * FROM Orders_Status_view WHERE oid = 15
+--------------
+
+oid	order_customer	order_restaurant	order_initialized_datetime	order_being_prepared_datetime	order_being_delivered_datetime	order_delivered_datetime
+15	Patrick M. Tyler	Sar Tang 190	2015-01-15 14:22:22	2015-01-15 14:24:22	2015-01-15 14:28:22	2015-01-15 14:53:22
+1 row in set
+
+--------------
+-- 4
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+GRANT select on orders_status_view to deliberuser with grant option
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 5-a-i
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT id,	name	FROM	Users	WHERE	name	LIKE	"Ja%"
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Users	ALL	NULL	NULL	NULL	NULL	50	Using where
+1 row in set
+
+--------------
+-- 5-a-ii
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT id,	name	FROM	Users	WHERE	name	LIKE	"%an"
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Users	ALL	NULL	NULL	NULL	NULL	50	Using where
+1 row in set
+
+--------------
+-- 5-a-iii
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT oid,	total_amount	FROM	Orders	WHERE	total_amount	>	100
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Orders	ALL	NULL	NULL	NULL	NULL	25	Using where
+1 row in set
+
+--------------
+-- 5-b
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE INDEX ix_Users_name
+on users(name)
+--------------
+
+Query OK, 0 rows affected
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5-c
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+CREATE INDEX ix_Orders_total_amount
+on orders(total_amount)
+--------------
+
+Query OK, 0 rows affected
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5-d-i
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT id,	name	FROM	Users	WHERE	name	LIKE	"Ja%"
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Users	range	ix_Users_name	ix_Users_name	123	NULL	5	Using where; Using index
+1 row in set
+
+--------------
+-- 5-d-ii
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT id,	name	FROM	Users	WHERE	name	LIKE	"%an"
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Users	index	NULL	ix_Users_name	123	NULL	50	Using where; Using index
+1 row in set
+
+--------------
+-- 5-d-iii
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+EXPLAIN SELECT oid,	total_amount	FROM	Orders	WHERE	total_amount	>	100
+--------------
+
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	Orders	range	ix_Orders_total_amount	ix_Orders_total_amount	5	NULL	15	Using where; Using index
+1 row in set
+
+--------------
+-- 5-e
+--------------
+
+Query OK, 0 rows affected
+
+--------------
+-- 5a does not use indexing while 5d does, which makes the query faster.
+--------------
+
+Query OK, 0 rows affected
+
+Bye

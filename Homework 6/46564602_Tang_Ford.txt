@@ -1,0 +1,233 @@
+Execute:
+> select timediff(ots2.order_status_datetime, ots.order_status_datetime)
+from orders_track_status ots, orders_track_status ots2
+where ots.oid = ots2.oid and ots.order_status_code = 1 and ots2.order_status_code = 4
+order by ots.oid desc limit 1
+/*	Q1	*/
+
++ -------------------------------------------------------------------- +
+| timediff(ots2.order_status_datetime, ots.order_status_datetime)      |
++ -------------------------------------------------------------------- +
+|                                                                      |
++ -------------------------------------------------------------------- +
+1 rows
+
+Execute:
+> select restaurants.rid, restaurants.name, count(dishes.rid)
+from restaurants, dishes
+where restaurants.rid = dishes.rid
+group by dishes.rid
+/* Q2 */
+
++ -------- + --------- + ---------------------- +
+| rid      | name      | count(dishes.rid)      |
++ -------- + --------- + ---------------------- +
+| 1        | Pat Urban Seoul | 3                      |
+| 2        | Dan Urban Plates | 3                      |
+| 3        | Ken Fish Grill | 3                      |
+| 4        | Ric Miyabi Shabu Shabu Grill | 3                      |
+| 5        | Sar Tang 190 | 3                      |
+| 6        | Ann Falasophy | 3                      |
+| 7        | Nat Sandwich Plus | 3                      |
+| 8        | Rom Del Sushi | 3                      |
+| 9        | Kri Dhaba | 3                      |
+| 10       | Nor Kingchops | 3                      |
++ -------- + --------- + ---------------------- +
+10 rows
+
+Execute:
+> select orders_contain_dishes.oid, dishes.name, orders_contain_dishes.quantity * dishes.price
+from orders_contain_dishes, dishes
+where orders_contain_dishes.name = dishes.name and orders_contain_dishes.oid in
+	(
+	select oid
+	from orders_contain_dishes
+	group by oid having count(oid) >= 3
+	)
+/* Q3 */
+
++ -------- + --------- + -------------------------------------------------- +
+| oid      | name      | orders_contain_dishes.quantity * dishes.price      |
++ -------- + --------- + -------------------------------------------------- +
+| 12       | salmon    | 260.00                                             |
+| 12       | skewered shrimp | 219.80                                             |
+| 12       | swordfish | 230.00                                             |
+| 8        | hummus    | 139.90                                             |
+| 8        | the burger combo | 164.95                                             |
+| 8        | the karma burger | 54.00                                              |
+| 4        | fresh lemonade | 25.98                                              |
+| 4        | sandwich  | 33.98                                              |
+| 4        | the thai wrap | 26.00                                              |
++ -------- + --------- + -------------------------------------------------- +
+9 rows
+
+Execute:
+> select rid, avg(rating)
+from customers_review
+group by rid
+having avg(rating) >
+	(
+	select avg(rating)
+	from customers_review
+	)
+/* Q4 */
+
++ -------- + ---------------- +
+| rid      | avg(rating)      |
++ -------- + ---------------- +
+| 2        | 3.1667           |
+| 4        | 5.0000           |
+| 5        | 5.0000           |
+| 7        | 5.0000           |
+| 8        | 4.0000           |
+| 10       | 4.0000           |
++ -------- + ---------------- +
+6 rows
+
+Execute:
+> select customers.nickname, orders.oid, orders.total_amount
+from customers left join orders on customers.cid = orders.cid
+order by customers.nickname asc
+/* Q5 */
+
++ ------------- + -------- + ----------------- +
+| nickname      | oid      | total_amount      |
++ ------------- + -------- + ----------------- +
+| Alien Leader  | 3        | 96.50             |
+| Alien Leader  | 6        | 62.50             |
+| Blimey Billy Blackstroker |          |                   |
+| Bloody Lena Stoker |          |                   |
+| Brutus Pale Klek | 19       | 32.50             |
+| Dana Hawkins  | 9        | 59.95             |
+| El Agent      |          |                   |
+| Elastic Mustard |          |                   |
+| Forsaken Captain | 1        | 22.50             |
+| Forsaken Captain | 4        | 85.96             |
+| Forsaken Captain | 11       | 173.94            |
+| Forsaken Captain | 12       | 709.80            |
+| Forsaken Captain | 13       | 1199.50           |
+| Forsaken Captain | 14       | 569.88            |
+| Forsaken Captain | 15       | 129.90            |
+| Forsaken Captain | 16       | 41.97             |
+| Forsaken Captain | 17       | 315.00            |
+| Forsaken Captain | 18       | 2913.00           |
+| Forsaken Captain | 20       | 210.00            |
+| Gargoyle Bad  | 2        | 115.00            |
+| Gargoyle Bad  | 5        | 153.97            |
+| Gold Jacob Silverbeard |          |                   |
+| Gold Kala Fargloom | 10       | 1379.70           |
+| Heavy Major   | 7        | 22.50             |
+| Joe Harker    |          |                   |
+| Mars Lieutenant |          |                   |
+| Nana Deadwood | 8        | 358.85            |
+| Poseidon Arrow |          |                   |
+| Stony Prince  |          |                   |
+| The Brave Boy |          |                   |
+| The Gladiator |          |                   |
+| The Oyster    |          |                   |
++ ------------- + -------- + ----------------- +
+32 rows
+
+Execute:
+> select restaurants.rid, restaurants.name, users.name, customers_review.rating
+from restaurants left join customers_review on restaurants.rid = customers_review.rid left join users on customers_review.cid = users.id
+order by restaurants.name asc
+/* Q6 */
+
++ -------- + --------- + --------- + ----------- +
+| rid      | name      | name      | rating      |
++ -------- + --------- + --------- + ----------- +
+| 6        | Ann Falasophy | Joyce J. Rayo | 1           |
+| 6        | Ann Falasophy | Timothy A. German | 2           |
+| 2        | Dan Urban Plates | Patrick M. Tyler | 1           |
+| 2        | Dan Urban Plates | Kenneth B. Knight | 4           |
+| 2        | Dan Urban Plates | Joyce J. Rayo | 2           |
+| 2        | Dan Urban Plates | Sophia D. Williams | 3           |
+| 2        | Dan Urban Plates | Michael R. Deane | 4           |
+| 2        | Dan Urban Plates | Raul A. Dicarlo | 5           |
+| 3        | Ken Fish Grill | Patrick M. Tyler | 3           |
+| 3        | Ken Fish Grill | Danny C. Malveaux | 1           |
+| 3        | Ken Fish Grill | Kenneth B. Knight | 1           |
+| 9        | Kri Dhaba |           |             |
+| 7        | Nat Sandwich Plus | Sophia D. Williams | 5           |
+| 10       | Nor Kingchops | Raul A. Dicarlo | 4           |
+| 1        | Pat Urban Seoul | Patrick M. Tyler | 4           |
+| 1        | Pat Urban Seoul | Anne M. Gurley | 1           |
+| 4        | Ric Miyabi Shabu Shabu Grill | James K. McGaha | 5           |
+| 8        | Rom Del Sushi | Michael R. Deane | 4           |
+| 5        | Sar Tang 190 | Patrick M. Tyler | 5           |
+| 5        | Sar Tang 190 | Raul A. Dicarlo | 5           |
++ -------- + --------- + --------- + ----------- +
+20 rows
+
+Execute:
+> select restaurants.rid, restaurants.name, count(customers_review.rid), min(customers_review.rating), max(customers_review.rating), avg(customers_review.rating)
+from restaurants left join customers_review on restaurants.rid = customers_review.rid 
+group by customers_review.rid
+order by restaurants.name asc
+/* Q7 */
+
++ -------- + --------- + -------------------------------- + --------------------------------- + --------------------------------- + --------------------------------- +
+| rid      | name      | count(customers_review.rid)      | min(customers_review.rating)      | max(customers_review.rating)      | avg(customers_review.rating)      |
++ -------- + --------- + -------------------------------- + --------------------------------- + --------------------------------- + --------------------------------- +
+| 6        | Ann Falasophy | 2                                | 1                                 | 2                                 | 1.5000                            |
+| 2        | Dan Urban Plates | 6                                | 1                                 | 5                                 | 3.1667                            |
+| 3        | Ken Fish Grill | 3                                | 1                                 | 3                                 | 1.6667                            |
+| 9        | Kri Dhaba | 0                                |                                   |                                   |                                   |
+| 7        | Nat Sandwich Plus | 1                                | 5                                 | 5                                 | 5.0000                            |
+| 10       | Nor Kingchops | 1                                | 4                                 | 4                                 | 4.0000                            |
+| 1        | Pat Urban Seoul | 2                                | 1                                 | 4                                 | 2.5000                            |
+| 4        | Ric Miyabi Shabu Shabu Grill | 1                                | 5                                 | 5                                 | 5.0000                            |
+| 8        | Rom Del Sushi | 1                                | 4                                 | 4                                 | 4.0000                            |
+| 5        | Sar Tang 190 | 2                                | 5                                 | 5                                 | 5.0000                            |
++ -------- + --------- + -------------------------------- + --------------------------------- + --------------------------------- + --------------------------------- +
+10 rows
+
+Execute:
+> select users.id, users.name, 
+case
+	when users.id = customers.cid then "Customer"
+    else NULL
+    end as Customer,
+case
+	when users.id = drivers.did then "Driver"
+    else NULL
+    end as Driver
+from users left join customers on users.id = customers.cid left join drivers on users.id = drivers.did
+/* Q8 */
+
++ ------- + --------- + ------------- + ----------- +
+| id      | name      | Customer      | Driver      |
++ ------- + --------- + ------------- + ----------- +
+| 1       | Patrick M. Tyler | Customer      | Driver      |
+| 2       | Danny C. Malveaux | Customer      | Driver      |
+| 3       | Kenneth B. Knight | Customer      | Driver      |
+| 4       | Richard A. Delvalle | Customer      | Driver      |
+| 5       | Gladys B. Hopper | Customer      | Driver      |
+| 6       | Sara T. Wilson | Customer      | Driver      |
+| 7       | Charles M. Gunter | Customer      | Driver      |
+| 8       | Michelle L. Nye | Customer      | Driver      |
+| 9       | Joseph A. Obrien | Customer      | Driver      |
+| 10      | James M. Schwan | Customer      | Driver      |
+| 11      | Kristy H. Hilliard |               | Driver      |
+| 12      | Joyce J. Rayo | Customer      |             |
+| 13      | Roy T. Herbert |               | Driver      |
+| 14      | Sophia D. Williams | Customer      |             |
+| 15      | Timothy M. Wilhelm |               | Driver      |
+| 16      | Michael R. Deane | Customer      |             |
+| 17      | Guadalupe C. Necaise |               | Driver      |
+| 18      | Raul A. Dicarlo | Customer      |             |
+| 19      | Kendrick S. Craig |               | Driver      |
+| 20      | Timothy A. German | Customer      |             |
+| 21      | Kathleen T. Shelly |               | Driver      |
+| 22      | Joel A. Lozano | Customer      |             |
+| 23      | Jeffrey C. Shields |               | Driver      |
+| 24      | Nora W. Hardy | Customer      |             |
+| 25      | Rolando K. Smith |               | Driver      |
+| 26      | James K. McGaha | Customer      |             |
+| 27      | Elizabeth S. Bongiorno |               | Driver      |
+| 28      | Anne M. Gurley | Customer      |             |
+| 29      | Janet A. Ricker |               | Driver      |
+| 30      | Nathan M. Schneider | Customer      |             |
++ ------- + --------- + ------------- + ----------- +
+30 rows
